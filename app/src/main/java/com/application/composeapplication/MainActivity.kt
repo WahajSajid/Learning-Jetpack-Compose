@@ -46,8 +46,6 @@ fun EditText() {
         label = { Text(text = "Enter Message")},
         onValueChange = {state.value = it})
 }
-
-
 @Preview(showSystemUi = true, name = "Button")
 @Composable
 fun Button() {
