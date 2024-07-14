@@ -1,6 +1,7 @@
 package com.application.composeapplication
 
 import android.os.Bundle
+import android.service.autofill.OnClickAction
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -43,6 +44,7 @@ import androidx.compose.ui.unit.sp
 
 
 class MainActivity : ComponentActivity() {
+    private lateinit var uidText:String
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -55,9 +57,19 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun SettingScreen() {
-    Column(modifier = Modifier.padding(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding())) {
-        TextContent(text = "Edit Name", paddingStart = 10, size = 25, weight = Bold, paddingTop = 20.0)
-        EditText()
+    Column(
+        modifier = Modifier.padding(
+            top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+        )
+    ) {
+        TextContent(
+            text = "Edit Name",
+            paddingStart = 10,
+            size = 25,
+            weight = Bold,
+            paddingTop = 20.0
+        )
+       val textFieldContent =  EditText()
         HorizontalDivider(
             thickness = 4.dp,
             modifier = Modifier.padding(top = 50.dp)
@@ -76,7 +88,7 @@ fun SettingScreen() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             TextContent(text = "UID: ", size = 20, weight = Bold, paddingStart = 5)
-            TextContent(text = "aklsjfqkkjdsjjahf", size = 16, paddingTop = 1.5)
+            UidText()
             Spacer(modifier = Modifier.weight(2f))
             Button(
                 onClick = {},
@@ -112,12 +124,21 @@ fun SettingScreen() {
             text = "Note: Checking the box will add yourself to the mates list to add and split dues for yourself also. ",
             modifier = Modifier.padding(30.dp)
         )
-        ButtonComposable(text = "Save Changes", toastText = "Save Changes Button Clicked", textColor = Color.Green, borderStrokeWidth = 1.0, paddingTop = 60.0)
+        ButtonComposable(
+            text = "Save Changes",
+            toastText = "Save Changes Button Clicked",
+            textColor = Color.Green,
+            borderStrokeWidth = 1.0,
+            paddingTop = 60.0,
+            data = textFieldContent
+        )
         ButtonComposable(
             text = "Delete Account",
             toastText = "Delete Button Clicked",
             textColor = Color.Red,
-            strokeColor = Color.Transparent
+            strokeColor = Color.Transparent,
+            data = "data is being deleted"
+
         )
     }
 }
@@ -135,17 +156,22 @@ fun CheckBoxComposable() {
 @Composable
 fun ButtonComposable(
     text: String,
-    toastText: String,
+    toastText: String = "",
     textColor: Color,
     borderStrokeWidth: Double = 0.0,
-    strokeColor:Color = Color.Green,
+    strokeColor: Color = Color.Green,
     backgroundColor: Color = Color.Transparent,
     paddingTop: Double = 0.0,
+    data:String
 ) {
     val context = LocalContext.current
+    var changedData = ""
     Button(
-        onClick = { Toast.makeText(context, toastText, Toast.LENGTH_SHORT).show() },
-        colors = ButtonDefaults.buttonColors(contentColor = textColor, containerColor = backgroundColor),
+        onClick =  { },
+        colors = ButtonDefaults.buttonColors(
+            contentColor = textColor,
+            containerColor = backgroundColor
+        ),
         border = BorderStroke(borderStrokeWidth.dp, color = strokeColor),
         modifier = Modifier
             .padding(top = paddingTop.dp, start = 10.dp, end = 10.dp)
@@ -153,7 +179,15 @@ fun ButtonComposable(
     ) {
         Text(text = text)
     }
+    UidText(text = changedData)
 }
+
+
+@Composable
+fun UidText(text:String = ""){
+    Text(text = text, fontSize = 16.sp)
+}
+
 
 @Composable
 fun TextContent(
@@ -174,7 +208,7 @@ fun TextContent(
 }
 
 @Composable
-fun EditText() {
+fun EditText(): String {
     val state = remember {
         mutableStateOf("")
     }
@@ -186,10 +220,11 @@ fun EditText() {
             .fillMaxWidth()
             .padding(top = 15.dp),
     )
+    return state.value
 }
 
 @Composable
-fun MateCard() {
+fun MateCard(text: String) {
     Card(
         modifier = Modifier
             .padding(10.dp)
@@ -209,7 +244,7 @@ fun MateCard() {
         ) {
             Row(horizontalArrangement = Arrangement.Center) {
                 ImageComposable(R.drawable.baseline_person_24)
-                TextComposable(text = "Wahaj Sajid", fontWeight = Bold, fontSize = 18)
+                TextComposable(text = text, fontWeight = Bold, fontSize = 18)
             }
             Row(
                 Modifier.padding(top = 2.dp),
