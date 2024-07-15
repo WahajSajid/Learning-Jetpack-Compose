@@ -1,13 +1,15 @@
+@file:Suppress("UNUSED_EXPRESSION")
+
 package com.application.composeapplication
 
 import android.os.Bundle
-import android.service.autofill.OnClickAction
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,6 +19,8 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -44,16 +48,70 @@ import androidx.compose.ui.unit.sp
 
 
 class MainActivity : ComponentActivity() {
-    private lateinit var uidText:String
+    private lateinit var matesData: ArrayList<MatesInfo>
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            SettingScreen()
+            setData()
+            LazyColumn(content = {
+                items(matesData) { item ->
+                    MateCard(
+                        mateName = item.mateName,
+                        mateId = item.mateId,
+                        matePhone = item.matePhone, toastText = item.mateName
+                    )
+
+                }
+            })
         }
+    }
+
+    //Function to set the data for mates data
+    fun setData() {
+        matesData = ArrayList()
+        matesData.add(MatesInfo("Wahaj Sajid", "wahajsajid@1", "03126385200"))
+        matesData.add(MatesInfo("Basit Ali", "basit@2", "03126385201"))
+        matesData.add(MatesInfo("Abdullah", "abdullah@3", "03126385202"))
+        matesData.add(MatesInfo("Habibullah", "habibullah@4", "03126385203"))
+        matesData.add(MatesInfo("Samiullah", "samiullah@5", "03126385204"))
+        matesData.add(MatesInfo("Faiz", "faiz@6", "03126385205"))
+        matesData.add(MatesInfo("Rustam", "rustam@7", "03126385206"))
+        matesData.add(MatesInfo("Bilal", "bilal@8", "03126385207"))
+        matesData.add(MatesInfo("Zulqar", "zulqar@9", "03126385208"))
+        matesData.add(MatesInfo("Adnan", "adnan@10", "03126385209"))
+        matesData.add(MatesInfo("Ahmad", "ahmad@11", "03126385210"))
+        matesData.add(MatesInfo("Zain", "zain@12", "03126385211"))
+        matesData.add(MatesInfo("Anas", "anas@13", "03126385212"))
+        matesData.add(MatesInfo("Umair", "umair@14", "03126385213"))
+        matesData.add(MatesInfo("Zeshan", "zeshan@15", "03126385214"))
+        matesData.add(MatesInfo("Sufyan", "sufyan@16", "03126385215"))
+    }
+
+}
+
+
+@Composable
+fun Buttons() {
+    Row(
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        modifier = Modifier.fillMaxWidth().padding(top = 5.dp)
+    ) {
+        ButtonComposable(buttonText = "Remove", Color.Red)
+        ButtonComposable(buttonText = "Update")
+        ButtonComposable(buttonText = "Edit")
     }
 }
 
+@Composable
+fun ButtonComposable(buttonText: String, color: Color = Color.DarkGray) {
+    Button(
+        onClick = { },
+        colors = ButtonDefaults.buttonColors(containerColor = color)
+    ) {
+        Text(text = buttonText)
+    }
+}
 
 @Composable
 fun SettingScreen() {
@@ -69,7 +127,7 @@ fun SettingScreen() {
             weight = Bold,
             paddingTop = 20.0
         )
-       val textFieldContent =  EditText()
+        val textFieldContent = EditText()
         HorizontalDivider(
             thickness = 4.dp,
             modifier = Modifier.padding(top = 50.dp)
@@ -162,12 +220,12 @@ fun ButtonComposable(
     strokeColor: Color = Color.Green,
     backgroundColor: Color = Color.Transparent,
     paddingTop: Double = 0.0,
-    data:String
+    data: String
 ) {
     val context = LocalContext.current
     var changedData = ""
     Button(
-        onClick =  { },
+        onClick = { },
         colors = ButtonDefaults.buttonColors(
             contentColor = textColor,
             containerColor = backgroundColor
@@ -184,7 +242,7 @@ fun ButtonComposable(
 
 
 @Composable
-fun UidText(text:String = ""){
+fun UidText(text: String = "") {
     Text(text = text, fontSize = 16.sp)
 }
 
@@ -223,8 +281,16 @@ fun EditText(): String {
     return state.value
 }
 
+
+data class MatesInfo(var mateName: String, var mateId: String, var matePhone: String)
+
+
 @Composable
-fun MateCard(text: String) {
+fun MateCard(mateName: String, mateId: String, matePhone: String, toastText: String = "") {
+    val context = LocalContext.current
+    val clicked = remember {
+        mutableStateOf(false)
+    }
     Card(
         modifier = Modifier
             .padding(10.dp)
@@ -233,7 +299,13 @@ fun MateCard(text: String) {
                 top = WindowInsets.statusBars
                     .asPaddingValues()
                     .calculateTopPadding()
-            ),
+            )
+            .clickable {
+                Toast
+                    .makeText(context, toastText, Toast.LENGTH_SHORT)
+                    .show()
+                clicked.value = !clicked.value
+            },
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp, pressedElevation = 10.dp)
     )
 
@@ -244,14 +316,14 @@ fun MateCard(text: String) {
         ) {
             Row(horizontalArrangement = Arrangement.Center) {
                 ImageComposable(R.drawable.baseline_person_24)
-                TextComposable(text = text, fontWeight = Bold, fontSize = 18)
+                TextComposable(text = mateName, fontWeight = Bold, fontSize = 18)
             }
             Row(
                 Modifier.padding(top = 2.dp),
                 horizontalArrangement = Arrangement.Center
             ) {
                 ImageComposable(image = R.drawable.baseline_phone_24)
-                TextComposable(text = "03126385200", fontWeight = Normal, fontSize = 14)
+                TextComposable(text = matePhone, fontWeight = Normal, fontSize = 14)
             }
             Row(Modifier.padding(top = 2.dp)) {
                 Text(
@@ -259,11 +331,13 @@ fun MateCard(text: String) {
                     fontWeight = Bold,
                     color = Color.Red
                 )
-                TextComposable(text = "wahaj@1", fontWeight = Normal, fontSize = 14)
+                TextComposable(text = mateId, fontWeight = Normal, fontSize = 14)
             }
             Row(
                 horizontalArrangement = Arrangement.SpaceEvenly,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 5.dp)
             ) {
                 Row {
                     Text(text = "Rent: ", fontWeight = Bold, color = Color.Red)
@@ -278,6 +352,9 @@ fun MateCard(text: String) {
                     TextComposable(text = "0", fontWeight = Normal, fontSize = 14)
                 }
             }
+            if (clicked.value) {
+                Buttons()
+            }
         }
     }
 }
@@ -285,9 +362,9 @@ fun MateCard(text: String) {
 @Preview(showSystemUi = true)
 @Composable
 fun PreviewFunction() {
-    SettingScreen()
+//    MateCard(mateName = "Wahaj Sajid", mateId = "wahajsajid@1", matePhone = "03126385200")
+    Buttons()
 }
-
 
 @Composable
 fun TextComposable(text: String, fontWeight: FontWeight, fontSize: Int) {
