@@ -1,5 +1,8 @@
 package com.application.composeapplication
 
+import android.annotation.SuppressLint
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -29,13 +32,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.text.font.FontWeight.Companion.Normal
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.buildAnnotatedString
 
 //Composable function which render the Setting Screen UI
 @Composable
-fun SettingScreen() {
+fun SettingScreen(viewModel: SharedViewModel) {
+    val textState = remember {
+        mutableStateOf("")
+    }
     Column(
         modifier = Modifier.padding(
             top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
@@ -48,7 +56,7 @@ fun SettingScreen() {
             weight = Bold,
             paddingTop = 20.0
         )
-        val textFieldContent = EditText()
+        EditText(viewModel)
         HorizontalDivider(
             thickness = 4.dp,
             modifier = Modifier.padding(top = 50.dp)
@@ -67,20 +75,10 @@ fun SettingScreen() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             TextContent(text = "UID: ", size = 20, weight = Bold, paddingStart = 5)
-            UidText()
+            UidText(text = textState.value)
             Spacer(modifier = Modifier.weight(2f))
-            Button(
-                onClick = {},
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Transparent,
-                    contentColor = Color.Black
-                )
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.baseline_content_copy_24),
-                    contentDescription = "",
-                )
-            }
+            CopyButton(text = textState.value)
+
         }
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -104,15 +102,15 @@ fun SettingScreen() {
             modifier = Modifier.padding(30.dp)
         )
         ButtonComposable(
+            { textState.value = viewModel.editTextState.value },
             text = "Save Changes",
-            toastText = "Save Changes Button Clicked",
             textColor = Color.Green,
             borderStrokeWidth = 1.0,
             paddingTop = 60.0
         )
         ButtonComposable(
+            { textState.value = "" },
             text = "Delete Account",
-            toastText = "Delete Button Clicked",
             textColor = Color.Red,
             strokeColor = Color.Transparent
 
@@ -120,15 +118,37 @@ fun SettingScreen() {
     }
 }
 
+
+@SuppressLint("ServiceCast")
+@Composable
+fun CopyButton(text: String) {
+    val context = LocalContext.current
+    val clipboardManager = LocalClipboardManager.current
+    val annotatedText = buildAnnotatedString { append(text) }
+    Button(
+        onClick = {
+            clipboardManager.setText(annotatedString = annotatedText)
+            Toast.makeText(context,"$annotatedText copied to clipboard",Toast.LENGTH_SHORT).show()
+        },
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.Transparent,
+            contentColor = Color.Black
+        )
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.baseline_content_copy_24),
+            contentDescription = "",
+        )
+    }
+}
+
+
 //Composable function render the Text Field for Setting screen
 @Composable
-fun EditText() {
-    val state = remember {
-        mutableStateOf("")
-    }
+fun EditText(viewModel: SharedViewModel) {
     TextField(
-        value = state.value,
-        onValueChange = { state.value = it },
+        value = viewModel.editTextState.value,
+        onValueChange = { viewModel.editTextState.value = it },
         label = { Text(text = "Name") },
         modifier = Modifier
             .fillMaxWidth()
@@ -167,18 +187,16 @@ fun UidText(text: String = "") {
 //Composable which render the buttons used in Setting screen
 @Composable
 fun ButtonComposable(
+    updateText: () -> Unit = {},
     text: String,
-    toastText: String = "",
     textColor: Color,
     borderStrokeWidth: Double = 0.0,
     strokeColor: Color = Color.Green,
     backgroundColor: Color = Color.Transparent,
     paddingTop: Double = 0.0,
 ) {
-    val context = LocalContext.current
-    val changedData = ""
     Button(
-        onClick = { },
+        onClick = { updateText() },
         colors = ButtonDefaults.buttonColors(
             contentColor = textColor,
             containerColor = backgroundColor
@@ -190,9 +208,7 @@ fun ButtonComposable(
     ) {
         Text(text = text)
     }
-    UidText(text = changedData)
 }
-
 
 
 //Composable function which render the check box used in Setting screen
@@ -203,4 +219,10 @@ fun CheckBoxComposable() {
         checked = checkBoxState.value,
         onCheckedChange = { checkBoxState.value = it },
     )
+}
+
+@Preview(showSystemUi = true)
+@Composable
+private fun PreviewFunction() {
+    SettingScreen(viewModel = SharedViewModel())
 }
