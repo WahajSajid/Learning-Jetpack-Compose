@@ -1,14 +1,24 @@
 package com.application.composeapplication
 
 import android.annotation.SuppressLint
-import android.content.ClipData
-import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.ui.platform.ClipboardManager
-import androidx.lifecycle.ViewModelProvider
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+//noinspection UsingMaterialAndMaterial3Libraries
+import androidx.compose.material.MaterialTheme
+//noinspection UsingMaterialAndMaterial3Libraries
+import androidx.compose.material.Surface
+//noinspection UsingMaterialAndMaterial3Libraries
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 
 
 class MainActivity : ComponentActivity() {
@@ -17,8 +27,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val viewModel = ViewModelProvider(this)[SharedViewModel::class.java]
-            SettingScreen(viewModel = viewModel)
+            setData()
+            RecyclerView(matesData = matesData)
         }
     }
 
@@ -47,6 +57,40 @@ class MainActivity : ComponentActivity() {
 
 
 data class MatesInfo(var mateName: String, var mateId: String, var matePhone: String)
+
+
+@Composable
+fun TextUi(
+    names: ArrayList<String> = ArrayList(),
+    @SuppressLint("ModifierParameter") modifier: Modifier = Modifier
+) {
+    Surface(
+        color = MaterialTheme.colors.primary,
+        modifier = Modifier.padding(10.dp)
+    ) {
+        Column(
+            Modifier.padding(30.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            for(name in names){
+                Text(text = name)
+            }
+        }
+    }
+
+}
+
+
+@Preview(widthDp = 320)
+@Composable
+private fun PreviewFunction() {
+    TextUi(
+        names = arrayListOf("Wahaj Sajid"), modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 5.dp)
+    )
+}
+
 
 
 

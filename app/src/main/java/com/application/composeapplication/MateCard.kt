@@ -1,7 +1,10 @@
 package com.application.composeapplication
 
 import android.annotation.SuppressLint
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -21,9 +25,10 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -41,17 +46,25 @@ import androidx.compose.ui.unit.sp
 @SuppressLint("ProduceStateDoesNotAssignValue")
 @Composable
 fun MateCard(mateName: String, mateId: String, matePhone: String, toastText: String = "") {
-    val clicked = remember {
+    val clicked = rememberSaveable {
         mutableStateOf(false)
     }
+    val animation by animateDpAsState(
+        targetValue = if (clicked.value) 5.dp else 0.dp,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioHighBouncy,
+            stiffness = Spring.StiffnessMedium
+        )
+    )
 
     val scaffoldState = rememberScaffoldState()
     produceState(initialValue = false, key1 = 1, key2 = 2, key3 = 3) {
         val value = clicked.value
-        if(value){
+        if (value) {
             scaffoldState.snackbarHostState.showSnackbar(toastText)
         }
     }
+
 
     Card(
         modifier = Modifier
@@ -71,11 +84,15 @@ fun MateCard(mateName: String, mateId: String, matePhone: String, toastText: Str
     {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .animateContentSize(animationSpec = spring(Spring.DampingRatioHighBouncy,Spring.StiffnessMediumLow))
         ) {
             Row(horizontalArrangement = Arrangement.Center) {
                 ImageComposable(R.drawable.baseline_person_24)
                 TextComposable(text = mateName, fontWeight = Bold, fontSize = 18)
+                if (clicked.value) ArrowDownAndUp(img = R.drawable.baseline_keyboard_arrow_up_24)
+                else ArrowDownAndUp(img = R.drawable.baseline_arrow_drop_down_24)
             }
             Row(
                 Modifier.padding(top = 2.dp),
@@ -111,16 +128,23 @@ fun MateCard(mateName: String, mateId: String, matePhone: String, toastText: Str
                     TextComposable(text = "0", fontWeight = Normal, fontSize = 14)
                 }
             }
-            AnimatedVisibility(visible = clicked.value) {
-                Buttons()
-            }
+          if(clicked.value){
+              Buttons()
+          }
         }
     }
 }
 
+
+@Composable
+fun ArrowDownAndUp(img: Int) {
+    Image(painter = painterResource(id = img), contentDescription = "arrow")
+}
+
+
 //Composable function which render the recycler view using LazyColumn
 @Composable
-fun RecyclerView(matesData:ArrayList<MatesInfo>){
+fun RecyclerView(matesData: ArrayList<MatesInfo>) {
     LazyColumn(content = {
         items(matesData) { item ->
             MateCard(
@@ -132,9 +156,6 @@ fun RecyclerView(matesData:ArrayList<MatesInfo>){
         }
     })
 }
-
-
-
 
 
 //Composable Function which render the buttons for the mate card
@@ -170,7 +191,7 @@ fun TextComposable(text: String, fontWeight: FontWeight, fontSize: Int) {
     Text(
         text = text,
         fontWeight = fontWeight,
-        fontSize = fontSize.sp
+        fontSize = fontSize.sp,
     )
 }
 
@@ -185,8 +206,7 @@ fun ImageComposable(image: Int) {
 }
 
 
-
-@Preview(showSystemUi = true)
+@Preview(widthDp = 320)
 @Composable
 private fun PreviewFunction() {
     MateCard(mateName = "Wahaj Sajid", mateId = "wahajsajid@1", matePhone = "03126385200")
